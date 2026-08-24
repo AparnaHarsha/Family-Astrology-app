@@ -1,5 +1,6 @@
 
-  import streamlit as st
+      
+import streamlit as st
 import swisseph as swe
 import datetime
 import pytz
@@ -22,8 +23,14 @@ RASIS = [
 
 # Helper function to get Rasi name and remaining degrees
 def get_rasi_details(total_degrees):
-    rasi_index = int(total_degrees // 30)
-    exact_degree = total_degrees % 30
+    if isinstance(total_degrees, (list, tuple)):
+        deg = total_degrees[0]
+    else:
+        deg = total_degrees
+    
+    deg = deg % 360
+    rasi_index = int(deg // 30)
+    exact_degree = deg % 30
     return RASIS[rasi_index], exact_degree
 
 with st.form("birth_details_form"):
@@ -59,17 +66,15 @@ if submitted and birth_city:
         julian_day_utc = swe.julday(year, month, day, decimal_hour)
         
         # 4. CALCULATE PLANETS (Using Sidereal Lahiri Flag)
-        # Calculate Sun (SE_SUN = 0)
         sun_data, _ = swe.calc_ut(julian_day_utc, 0, swe.SEFLG_SIDEREAL)
-        sun_rasi, sun_deg = get_rasi_details(sun_data)
+        sun_rasi, sun_deg = get_rasi_details(sun_data[0])
         
-        # Calculate Moon (SE_MOON = 1)
         moon_data, _ = swe.calc_ut(julian_day_utc, 1, swe.SEFLG_SIDEREAL)
-        moon_rasi, moon_deg = get_rasi_details(moon_data)
+        moon_rasi, moon_deg = get_rasi_details(moon_data[0])
         
         # 5. CALCULATE ASCENDANT / LAGNA
-        cusps, ascmc = swe.houses_ex(julian_day_utc, lat, lon, b'P', flag=swe.SEFLG_SIDEREAL)
-        lagna_rasi, lagna_deg = get_rasi_details(ascmc)
+        cusps, ascmc = swe.houses_ex(julian_day_utc, lat, lon, b'P', flags=swe.SEFLG_SIDEREAL)
+        lagna_rasi, lagna_deg = get_rasi_details(ascmc[0])
         
         # 6. DISPLAY RESULTS IN CLEAN BLOCKS
         st.success(f"🌅 **Lagna / Ascendant:** {lagna_rasi} ({lagna_deg:.2f}°)")
