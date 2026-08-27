@@ -43,8 +43,7 @@ if submitted and birth_city:
     try:
         # 1. Get Coordinates
         location = geolocator.geocode(birth_city)
-      
-if not location:
+        if not location:
             st.error("City not found. Please check spelling.")
             st.stop()
             
@@ -52,7 +51,7 @@ if not location:
         st.info(f"📍 Coordinates: Lat {lat:.4f}, Lon {lon:.4f}")
         
         # 2. Time Zone Correction to UTC
-        tf = TimezoneFinder()
+        tf = TimezoneFinder()                         
         timezone_str = tf.timezone_at(lng=lon, lat=lat)
         local_tz = pytz.timezone(timezone_str)
         local_dt = local_tz.localize(datetime.datetime.combine(birth_date, birth_time))
@@ -61,24 +60,22 @@ if not location:
         # 3. Calculate Julian Days
         year, month, day = utc_dt.year, utc_dt.month, utc_dt.day
         decimal_hour = utc_dt.hour + utc_dt.minute / 60.0 + utc_dt.second / 3600.0
-        julian_day_utc = swe.julday(year,month,day, decimal_hour)
+        julian_day_utc = swe.julday(year, month, day, decimal_hour)
         
-        # 4. CALCULATE PLANETSUsing Sidereal Lahiri Flag)
+        # 4. CALCULATE PLANETS (Using Sidereal Lahiri Flag)
         sun_data, _ = swe.calc_ut(julian_day_utc, 0, swe.SEFLG_SIDEREAL)
         sun_rasi, sun_deg = get_rasi_details(sun_data)
         
         moon_data, _ = swe.calc_ut(julian_day_utc, 1, swe.SEFLG_SIDEREAL)
         moon_rasi, moon_deg = get_rasi_details(moon_data)
-        
         # 5. CALCULATE ASCENDANT / LAGNA
         cusps, ascmc = swe.houses_ex(julian_day_utc, lat, lon, b'P', flags=swe.SEFLG_SIDEREAL)
-        # Passed ascmc safely because helper function handles array indexing internally
         lagna_rasi, lagna_deg = get_rasi_details(ascmc)
         
         # 6. DISPLAY RESULTS IN CLEAN BLOCKS
         st.success(f"🌅 **Lagna / Ascendant:** {lagna_rasi} ({lagna_deg:.2f}°)")
         st.success(f"🌞 **Vedic Sun Sign:** {sun_rasi} ({sun_deg:.2f}°)")
-        st.success(f"🌙 **Vedic MoonSign:** {moon_rasi} ({moon_deg:.2f}°)")
+        st.success(f"🌙 **Vedic Moon Sign:** {moon_rasi} ({moon_deg:.2f}°)")
         
     except Exception as e:
         st.error(f"An error occurred: {e}")
