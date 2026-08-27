@@ -25,7 +25,7 @@ def get_rasi_details(total_degrees):
         deg = total_degrees[0]
     else:
         deg = total_degrees
-  deg = deg % 360
+        deg = deg % 360
     rasi_index = int(deg // 30)
     exact_degree = deg % 30
     return RASIS[rasi_index], exact_degree
